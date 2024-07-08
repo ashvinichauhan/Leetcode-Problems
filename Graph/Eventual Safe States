@@ -1,0 +1,40 @@
+//  (Amazon/Adobe)
+
+import java.util.*;
+
+class Solution {
+    public List<Integer> eventualSafeNodes(int[][] graph) {
+        int n = graph.length;
+        int[] state = new int[n];
+        List<Integer> result = new ArrayList<>();
+        
+        for (int i = 0; i < n; i++) {
+            if (dfs(graph, state, i)) {
+                result.add(i);
+            }
+        }
+        
+        Collections.sort(result);
+        return result;
+    }
+
+    private boolean dfs(int[][] graph, int[] state, int node) {
+        if (state[node] != 0) {
+            return state[node] == 2;
+        }
+        
+        state[node] = 1; // Mark the node as visiting
+        
+        for (int neighbor : graph[node]) {
+            if (state[neighbor] == 2) {
+                continue;
+            }
+            if (state[neighbor] == 1 || !dfs(graph, state, neighbor)) {
+                return false;
+            }
+        }
+        
+        state[node] = 2; // Mark the node as safe
+        return true;
+    }
+}
