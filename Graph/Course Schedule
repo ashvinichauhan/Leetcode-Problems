@@ -1,0 +1,52 @@
+// (Facebook/Coinbase/Intuit)
+
+class Solution {
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        // Create an adjacency list for the graph representation
+        List<Integer>[] graph = new ArrayList[numCourses];
+        for (int i = 0; i < numCourses; i++) {
+            graph[i] = new ArrayList<>();
+        }
+
+        // Fill the adjacency list with the prerequisites
+        for (int[] prerequisite : prerequisites) {
+            int course = prerequisite[0];
+            int prerequisiteCourse = prerequisite[1];
+            graph[course].add(prerequisiteCourse);
+        }
+
+        // Arrays to keep track of visited nodes
+        boolean[] visited = new boolean[numCourses];
+        boolean[] stack = new boolean[numCourses];
+
+        // Perform DFS for each course
+        for (int i = 0; i < numCourses; i++) {
+            if (!visited[i]) {
+                if (isCyclic(graph, i, visited, stack)) {
+                    return false; // If a cycle is detected, return false
+                }
+            }
+        }
+
+        return true; // If no cycle is detected, return true
+    }
+
+    private boolean isCyclic(List<Integer>[] graph, int curr, boolean[] visited, boolean[] stack) {
+        // Mark the current node as visited and add it to the recursion stack
+        visited[curr] = true;
+        stack[curr] = true;
+
+        // Perform DFS for each neighboring node
+        for (int neighbor : graph[curr]) {
+            if (!visited[neighbor] && isCyclic(graph, neighbor, visited, stack)) {
+                return true; // If a cycle is detected, return true
+            } else if (stack[neighbor]) {
+                return true; // If a neighbor is already in the stack, a cycle is detected
+            }
+        }
+
+        // Remove the current node from the recursion stack
+        stack[curr] = false;
+        return false;
+    }
+}
