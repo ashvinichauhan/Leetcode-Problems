@@ -1,0 +1,89 @@
+// (Microsoft/Google/Uber)
+class Solution {
+    public int maxNumEdgesToRemove(int n, int[][] edges) {
+        // Union-Find for Alice and Bob
+        UnionFind ufAlice = new UnionFind(n);
+        UnionFind ufBob = new UnionFind(n);
+
+        int edgesRequired = 0;
+
+        // Step 1: Apply all type 3 edges first (usable by both Alice and Bob)
+        for (int[] edge : edges) {
+            if (edge[0] == 3) {
+                if (ufAlice.union(edge[1] - 1, edge[2] - 1)) {
+                    ufBob.union(edge[1] - 1, edge[2] - 1);
+                    edgesRequired++;
+                }
+            }
+        }
+
+        // Step 2: Apply type 1 edges for Alice and type 2 edges for Bob
+        for (int[] edge : edges) {
+            if (edge[0] == 1) {
+                if (ufAlice.union(edge[1] - 1, edge[2] - 1)) {
+                    edgesRequired++;
+                }
+            } else if (edge[0] == 2) {
+                if (ufBob.union(edge[1] - 1, edge[2] - 1)) {
+                    edgesRequired++;
+                }
+            }
+        }
+
+        // Step 3: Check if both Alice and Bob can traverse the whole graph
+        if (ufAlice.getCount() != 1 || ufBob.getCount() != 1) {
+            return -1;
+        }
+
+        // The maximum number of removable edges is the total number of edges minus the required edges
+        return edges.length - edgesRequired;
+    }
+
+    class UnionFind {
+        private int[] parent;
+        private int[] rank;
+        private int count;
+
+        public UnionFind(int size) {
+            parent = new int[size];
+            rank = new int[size];
+            count = size;
+            for (int i = 0; i < size; i++) {
+                parent[i] = i;
+                rank[i] = 1;
+            }
+        }
+
+        public int find(int p) {
+            if (parent[p] != p) {
+                parent[p] = find(parent[p]);
+            }
+            return parent[p];
+        }
+
+        public boolean union(int p, int q) {
+            int rootP = find(p);
+            int rootQ = find(q);
+
+            if (rootP == rootQ) {
+                return false;
+            }
+
+            if (rank[rootP] > rank[rootQ]) {
+                parent[rootQ] = rootP;
+            } else if (rank[rootP] < rank[rootQ]) {
+                parent[rootP] = rootQ;
+            } else {
+                parent[rootQ] = rootP;
+                rank[rootP]++;
+            }
+
+            count--;
+            return true;
+        }
+
+        public int getCount() {
+            return count;
+        }
+    }
+}
