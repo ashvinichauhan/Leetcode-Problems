@@ -1,0 +1,71 @@
+// (Amazon/TikTok/Airbnb)
+
+import java.util.*;
+
+class Solution {
+    public int findCheapestPrice(int n, int[][] flights, int src, int dst, int k) {
+        // Create a graph representation
+        Map<Integer, List<int[]>> graph = new HashMap<>();
+        for (int[] flight : flights) {
+            graph.putIfAbsent(flight[0], new ArrayList<>());
+            graph.get(flight[0]).add(new int[]{flight[1], flight[2]});
+        }
+
+        // Min-heap to get the minimum cost flight first
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[1]));
+        pq.add(new int[]{src, 0, 0}); // {current city, cost to reach this city, number of stops made}
+
+        // Best prices array to keep track of the best prices to each city within k stops
+        int[] bestPrices = new int[n];
+        Arrays.fill(bestPrices, Integer.MAX_VALUE);
+        bestPrices[src] = 0;
+
+        while (!pq.isEmpty()) {
+            int[] current = pq.poll();
+            int city = current[0];
+            int cost = current[1];
+            int stops = current[2];
+
+            // If we've reached the destination with required stops
+            if (city == dst) {
+                return cost;
+            }
+
+            // If we've made more than k stops, skip this path
+            if (stops > k) {
+                continue;
+            }
+
+            // Explore the neighbors
+            if (graph.containsKey(city)) {
+                for (int[] neighbor : graph.get(city)) {
+                    int nextCity = neighbor[0];
+                    int priceToNextCity = neighbor[1];
+                    int newCost = cost + priceToNextCity;
+
+                    // If the new cost is cheaper, add it to the priority queue
+                    if (newCost < bestPrices[nextCity] || stops + 1 <= k) {
+                        pq.add(new int[]{nextCity, newCost, stops + 1});
+                        bestPrices[nextCity] = newCost;
+                    }
+                }
+            }
+        }
+
+        // If the destination cannot be reached within k stops
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        Solution solution = new Solution();
+        int n1 = 4;
+        int[][] flights1 = {{0, 1, 100}, {1, 2, 100}, {2, 0, 100}, {1, 3, 600}, {2, 3, 200}};
+        int src1 = 0, dst1 = 3, k1 = 1;
+        System.out.println(solution.findCheapestPrice(n1, flights1, src1, dst1, k1)); // Output: 700
+
+        int n2 = 3;
+        int[][] flights2 = {{0, 1, 100}, {1, 2, 100}, {0, 2, 500}};
+        int src2 = 0, dst2 = 2, k2 = 1;
+        System.out.println(solution.findCheapestPrice(n2, flights2, src2, dst2, k2)); // Output: 200
+    }
+}
